@@ -1,40 +1,141 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArenaStrike - Battle Royale الأقوى</title>
-    <link href="https://unpkg.com/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
-        
-        :root {
-            --primary-color: #ff0000;
-            --secondary-color: #ff6b00;
-            --accent-color: #ffaa00;
-            --dark-bg: #0a0000;
-            --darker-bg: #000000;
-            --light-text: #ffffff;
-            --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            --danger-gradient: linear-gradient(135deg, #ff0000, #cc0000);
-            --shop-gradient: linear-gradient(135deg, #f59e0b, #ef4444);
-            --currency-gradient: linear-gradient(135deg, #10b981, #059669);
-            --hero-gradient: linear-gradient(135deg, #10b981, #3b82f6);
-            --tournament-gradient: linear-gradient(135deg, #f97316, #dc2626);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>التسجيل في بطولة ArenaStrike</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f0f15;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #1a1a25;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+    }
+    h1 {
+      text-align: center;
+      color: #00f3ff;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #2a2a3a;
+      color: white;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #00f3ff;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #00d0dd;
+    }
+    #success-message {
+      display: none;
+      background: #2e7d32;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>التسجيل في بطولة Duo Clash</h1>
+    <form id="registration-form">
+      <div class="form-group">
+        <label for="playerName">اسمك في اللعبة (يجب أن يكون مطابقًا)</label>
+        <input type="text" id="playerName" required placeholder="مثال: xX_AliGaming_Xx">
+      </div>
+      <div class="form-group">
+        <label for="teammateName">اسم شريكك في اللعبة (يجب أن يكون مطابقًا)</label>
+        <input type="text" id="teammateName" required placeholder="مثال: ProSniper99">
+      </div>
+      <div class="form-group">
+        <label for="email">بريدك الإلكتروني</label>
+        <input type="email" id="email" required placeholder="example@gmail.com">
+      </div>
+      <button type="submit">إرسال الطلب</button>
+    </form>
+    <div id="success-message">
+      ✅ تم الإرسال بنجاح!  
+      <br>سيتم التواصل معك إذا تم قبولك.
+    </div>
+  </div>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: var(--dark-bg);
-            color: var(--light-text);
-            overflow-x: hidden;
+  <script>
+    // 🔥 الصق config من Firebase هنا (من Project Settings)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "arenastrike-tournaments.firebaseapp.com",
+      projectId: "arenastrike-tournaments",
+      storageBucket: "arenastrike-tournaments.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef123456789"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    document.getElementById('registration-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const playerName = document.getElementById('playerName').value.trim();
+      const teammateName = document.getElementById('teammateName').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      // حفظ الطلب في Firestore
+      await db.collection('tournament_registrations').add({
+        playerName,
+        teammateName,
+        email,
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'pending' // pending, accepted, rejected
+      });
+
+      // إظهار رسالة النجاح
+      document.getElementById('registration-form').style.display = 'none';
+      document.getElementById('success-message').style.display = 'block';
+    });
+  </script>
+</body>
+</html>            overflow-x: hidden;
             background-image: 
                 radial-gradient(circle at 20% 50%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(255, 107, 0, 0.1) 0%, transparent 50%);
